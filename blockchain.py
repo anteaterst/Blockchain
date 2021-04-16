@@ -185,12 +185,12 @@ blockchain = Blockchain()
 # /mine 의 endpoint를 만든다. (요청을 GET 하는 곳이다.)
 @app.route('/mine', methods=['GET'])
 def mine():
-    # 우리는 다음 증거를 얻기 위해 작업 증명 알고리즘을 실행한다.
+    # 다음과 같은 증거를 얻기 위해 작업 증명 알고리즘을 실행한다.
     last_block = blockchain.last_block
     proof = blockchain.proof_of_work(last_block)
 
-    # 우리는 증거를 찾은 것에 대한 보상을 받아야 하는데
-    # 송신자는 "0"으로, 이 노드가 새 코인을 채굴했음을 나타냅니다.
+    # 증거를 찾은 것에 대한 보상을 받아야 하는데
+    # 송신자는 "0"으로, 이 노드가 새 코인을 채굴했음을 나타냄.
     blockchain.new_transaction(
         sender="0",
         recipient=node_identifier,
@@ -211,7 +211,7 @@ def mine():
     return jsonify(response), 200
 
 
-# /transactions/new 의 endpoint를 만든다. (여기에 우리가 데이터를 보내고 요청을 POST하는 곳이다.)
+# /transactions/new 의 endpoint를 만든다. (여기에 우리가 데이터를 보내고 요청을 POST하는 곳이다.) 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
     values = request.get_json()
@@ -230,16 +230,17 @@ def new_transaction():
 
 
 # /chain 의 endpoint를 만든다. (전체 블록체인을 반환하는 곳이다.)
-@app.route('/chain', methods=['GET'])
+@app.route('/chain', methods=['POST'])
 def full_chain():
     response = {
         'chain': blockchain.chain,
         'length': len(blockchain.chain),
     }
+
     return jsonify(response), 200
 
 
-@app.route('/nodes/register', methods=['POST'])
+@app.route('/nodes/register', methods=['GET'])
 def register_nodes():
     values = request.get_json()
 
@@ -276,14 +277,35 @@ def consensus():
 
 
 
-# 포트 5000번에서 서버를 돌린다.
+# 포트 5000번에서 서버 기동.
 if __name__ == '__main__':
+    
     from argparse import ArgumentParser
 
     parser = ArgumentParser()
     parser.add_argument('-p', '--port', default=5000, type=int, help='port to listen on')
     args = parser.parse_args()
     port = args.port
+    
+    app.run(host='127.0.0.1', port=port)
 
-    app.run(host='0.0.0.0', port=port)
 
+#
+# 채굴 테스트
+# http://localhost:5000/mine
+# 
+# 새로운 트랜젝션 생성    
+# http://localhost:5000/transactions/new
+#
+# 체인 요청
+# http://localhost:5000/chain 
+
+
+
+#=================================================
+# 새로운 문제에 직면 1
+# 채굴을 시도하려 하니 request.is_xhr 에러가 발생
+# 이는 is_xhr가 사용되지 않게 되면서 버려졌던 것 
+# $ pip install -U flask를 통해 업데이트를 하면서 해결할 수 있었다.
+# $ pip install werkzeug==0.16.1 을 통해 버전을 다운 시킴으로써 해결하는 방법도 존재
+#================================================
